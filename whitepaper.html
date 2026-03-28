@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOLEDAY ホワイトペーパー v3.2</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f5f7;--card:#ffffff;--border:#e5e5ea;
+  --text:#1c1c1e;--dim:#8e8e93;
+  --accent:#ff6b6b;--gold:#f59e0b;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.9;font-size:14px;
+}
+/* Header */
+.wp-header{
+  position:sticky;top:0;z-index:100;
+  background:rgba(245,245,247,0.92);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);padding:14px 24px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.wp-header .logo{
+  font-size:18px;font-weight:900;letter-spacing:2px;
+  background:linear-gradient(135deg,var(--accent),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.back-link{color:var(--dim);text-decoration:none;font-size:13px;font-weight:600}
+.back-link:hover{color:var(--text)}
+/* Layout */
+.wp-layout{
+  max-width:1200px;margin:0 auto;display:flex;gap:0;
+}
+/* TOC sidebar */
+.toc{
+  position:sticky;top:64px;width:260px;min-width:260px;
+  height:calc(100vh - 64px);overflow-y:auto;
+  padding:24px 16px;border-right:1px solid var(--border);
+  background:var(--card);
+}
+.toc-title{font-size:12px;font-weight:700;color:var(--dim);letter-spacing:2px;margin-bottom:12px;text-transform:uppercase}
+.toc a{
+  display:block;padding:6px 10px;margin:2px 0;border-radius:6px;
+  text-decoration:none;font-size:12px;color:var(--dim);
+  font-weight:500;transition:all .2s;line-height:1.5;
+}
+.toc a:hover{background:rgba(255,107,107,0.06);color:var(--accent)}
+@media(max-width:900px){
+  .toc{display:none}
+  .wp-layout{flex-direction:column}
+}
+/* Content */
+.wp-content{
+  flex:1;padding:40px 48px 80px;max-width:800px;min-width:0;
+}
+@media(max-width:600px){.wp-content{padding:24px 16px 60px}}
+.wp-content h2{
+  font-size:28px;font-weight:900;margin:0 0 8px;
+  background:linear-gradient(135deg,var(--accent),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.wp-content h3{
+  font-size:22px;font-weight:800;margin:48px 0 16px;color:var(--text);
+  padding-top:16px;border-top:1px solid var(--border);
+}
+.wp-content h3:first-of-type{border-top:none;margin-top:32px}
+.wp-content h4{font-size:16px;font-weight:700;margin:28px 0 10px;color:var(--text)}
+.wp-content p{margin:8px 0}
+.wp-content strong{color:var(--text)}
+.wp-content hr{border:none;border-top:1px solid var(--border);margin:40px 0}
+.wp-content code{
+  background:rgba(0,0,0,0.04);padding:2px 6px;border-radius:4px;font-size:13px;
+  font-family:"SF Mono",Consolas,monospace;
+}
+.wp-content pre{
+  background:#1c1c1e;color:#e5e5ea;padding:20px;border-radius:12px;
+  overflow-x:auto;margin:16px 0;line-height:1.6;
+}
+.wp-content pre code{background:none;color:inherit;padding:0}
+.wp-content table{
+  width:100%;border-collapse:collapse;margin:16px 0;font-size:13px;
+}
+.wp-content th,.wp-content td{
+  border:1px solid var(--border);padding:10px 12px;text-align:left;
+}
+.wp-content th{background:var(--bg);font-weight:700;color:var(--text);font-size:12px}
+.wp-content td{background:var(--card)}
+.wp-content li{margin:4px 0;padding-left:8px;list-style:none}
+.wp-content li::before{content:"•";color:var(--accent);font-weight:700;margin-right:8px}
+</style>
+</head>
+<body>
+
+<div class="wp-header">
+  <div class="logo">SOLEDAY White Paper</div>
+  <a href="index.html" class="back-link">← トップページに戻る</a>
+</div>
+
+<div class="wp-layout">
+<nav class="toc"><div class="toc-title">目次</div>
+<a href="#目次">目次</a>
+<a href="#1. 設計思想">1. 設計思想</a>
+<a href="#2. コアループ">2. コアループ</a>
+<a href="#3. 靴システム">3. 靴システム</a>
+<a href="#4. ムーブシステム（Phase A）">4. ムーブシステム（Phase A）</a>
+<a href="#5. SOLE経済">5. SOLE経済</a>
+<a href="#6. 宝箱と鍵システム">6. 宝箱と鍵システム</a>
+<a href="#7. クラフトシステム">7. クラフトシステム</a>
+<a href="#8. ソールストーンシステム">8. ソールストーンシステム</a>
+<a href="#9. 属性と天気共鳴">9. 属性と天気共鳴</a>
+<a href="#10. 経済バランスシミュレーション">10. 経済バランスシミュレーション</a>
+<a href="#11. フリーとプレミアムの差分">11. フリーとプレミアムの差分</a>
+<a href="#12. 不正防止">12. 不正防止</a>
+<a href="#13. 段階解放">13. 段階解放</a>
+<a href="#14. ソーシャル機能">14. ソーシャル機能</a>
+<a href="#15. 今後の検討課題">15. 今後の検討課題</a>
+<a href="#付録A：シミュレーションパラメータ一覧">付録A：シミュレーションパラメータ一覧</a>
+</nav>
+<div class="wp-content">
+<h2>SOLEDAY ゲームシステム ホワイトペーパー v3.2</h2>
+
+<p><strong>「昨日のジョギングが、今日ひとつの靴になった。」</strong></p>
+
+<p>作成日：2026年3月28日</p>
+<p>ステータス：ゲームバランス検証済ドラフト</p>
+
+<p>v3.2更新内容：ソーシャル機能追加（ランログ共有・フレンド・グループチャット）、足ダメージべき乗式、Legendary強化、コホートモデル追加、ユーザー分布見直し</p>
+
+<hr>
+
+<h3 id="目次">目次</h3>
+
+<li>[設計思想](#1-設計思想)</li>
+<li>[コアループ](#2-コアループ)</li>
+<li>[靴システム](#3-靴システム)</li>
+<li>[ムーブシステム](#4-ムーブシステム)</li>
+<li>[SOLE経済](#5-sole経済)</li>
+<li>[宝箱と鍵システム](#6-宝箱と鍵システム)</li>
+<li>[クラフトシステム](#7-クラフトシステム)</li>
+<li>[ソールストーンシステム](#8-ソールストーンシステム)</li>
+<li>[属性と天気共鳴](#9-属性と天気共鳴)</li>
+<li>[経済バランスシミュレーション](#10-経済バランスシミュレーション)</li>
+<li>[フリーとプレミアムの差分](#11-フリーとプレミアムの差分)</li>
+<li>[不正防止](#12-不正防止)</li>
+<li>[段階解放](#13-段階解放)</li>
+<li>[ソーシャル機能](#14-ソーシャル機能)</li>
+<li>[今後の検討課題](#15-今後の検討課題)</li>
+
+<hr>
+
+<h3 id="1. 設計思想">1. 設計思想</h3>
+
+<h4>1.1 コンセプト</h4>
+
+<p>走って稼いだコインで宝箱を開け、素材を集め、魔靴工房でAI画像生成による世界に1足だけのNFT靴をクラフトする。靴にはソールストーン（魔石）を宿し、属性と天気の力で強化する。</p>
+
+<h4>1.2 初心者ファースト原則</h4>
+
+<p><strong>原則1：Day 1は「走って帰ったら靴ができた」だけ。</strong> 初回セッション完了時にチュートリアル素材セットが配布され、初めての靴を自動クラフトする。</p>
+
+<p><strong>原則2：複雑さは段階解放。</strong> 機能はプレイヤーレベル（累計セッション数）に応じて順にアンロックされる。一度に覚えることは常に1つだけ。</p>
+
+<p><strong>原則3：放置しても損しない。</strong> エナジー制限なし。ログインボーナスの取り逃がしペナルティなし。靴の耐久値は「走ったぶんだけ」減る。</p>
+
+<p><strong>原則4：画面は「次に何をすればいいか」だけ見せる。</strong> 未解放機能のUIは非表示。</p>
+
+<hr>
+
+<h3 id="2. コアループ">2. コアループ</h3>
+
+<h4>2.1 全体フロー</h4>
+
+<pre><code>
+【Phase A：ムーブ（屋外）】
+  靴を装備して走る/歩く
+  → 距離 × 靴のEfficiency に応じて SOLE を獲得
+  → 距離 × 靴のLuck に応じた宝箱が1箱ドロップ
+  → 距離 × 靴のResilience に応じて靴の耐久度が減少
+  → 距離 × 靴のComfort に応じて足にダメージが蓄積
+
+【Phase B：帰宅後】
+  待機時間の過ぎた宝箱に鍵（SOLE で購入）を使って開封 → 靴素材を入手
+
+【Phase C：クラフト＆強化】
+  素材を魔靴工房に持ち込み → SOLE を支払い → AI生成で靴が完成
+  → ソールストーンをはめて強化 → 属性が天気と共鳴
+</code></pre>
+
+<h4>2.2 循環構造</h4>
+
+<pre><code>
+靴を装備して走る → SOLE＋宝箱 → 素材を集める → より強い靴をクラフト
+→ その靴を装備してまた走る → より多くのSOLE＆より良い宝箱 → …
+</code></pre>
+
+<p>走ることが起点であり、課金やトークン購入が起点にならない。</p>
+
+<hr>
+
+<h3 id="3. 靴システム">3. 靴システム</h3>
+
+<h4>3.1 4つのステータス</h4>
+
+<p>すべての靴は4つのステータスを持つ。各ステータスは靴のグレードに応じた範囲でランダムに決定される。</p>
+
+<table><tr><th>ステータス</th><th>効果</th><th>ゲーム内の意味</th></tr><tr><td>**Efficiency**</td><td>SOLEの獲得効率</td><td>高いほど1kmあたりのSOLEが増える</td></tr><tr><td>**Luck**</td><td>宝箱のグレード</td><td>高いほど良い宝箱が出やすい</td></tr><tr><td>**Resilience**</td><td>耐久度の減りにくさ</td><td>高いほど靴が長持ちする</td></tr><tr><td>**Comfort**</td><td>足へのダメージ軽減</td><td>高いほど1日に長く走れる</td></tr></table>
+
+<h4>3.2 グレードとステータス範囲</h4>
+
+<table><tr><th>グレード</th><th>ステータス範囲（各）</th><th>合計ステータス目安</th></tr><tr><td>Common</td><td>1〜10</td><td>12〜28</td></tr><tr><td>Uncommon</td><td>8〜20</td><td>40〜64</td></tr><tr><td>Rare</td><td>18〜35</td><td>90〜120</td></tr><tr><td>Epic</td><td>30〜55</td><td>150〜190</td></tr><tr><td>Legendary</td><td>50〜80</td><td>240〜280</td></tr></table>
+
+<h4>3.3 耐久度</h4>
+
+<p>靴にはグレードごとに最大耐久値が設定されている。ムーブするごとにResilienceに応じて減少する。</p>
+
+<p><strong>最大耐久値：</strong></p>
+
+<table><tr><th>グレード</th><th>最大耐久値</th><th>平均Resilience</th><th>耐久度消費/km</th><th>修理なしで走れる距離</th></tr><tr><td>Common</td><td>100</td><td>6</td><td>1.72</td><td>約58km</td></tr><tr><td>Uncommon</td><td>160</td><td>14</td><td>1.41</td><td>約114km</td></tr><tr><td>Rare</td><td>240</td><td>26</td><td>1.11</td><td>約215km</td></tr><tr><td>Epic</td><td>350</td><td>42</td><td>0.88</td><td>約398km</td></tr><tr><td>Legendary</td><td>500</td><td>65</td><td>0.68</td><td>約738km</td></tr></table>
+
+<p><strong>耐久度消費の計算式：</strong></p>
+
+<pre><code>
+耐久度消費/km = 2.0 / (1 + Resilience × 0.03)
+</code></pre>
+
+<p><strong>耐久度ゼロ時：靴は使用不能。</strong> 修理するまで装備できない。走れなくなるわけではない（裸足モードで走行可能、ただしSOLE獲得はゼロ）。</p>
+
+<h4>3.4 耐久度と足ダメージの関係</h4>
+
+<p>靴の耐久度が低下すると、足へのダメージが増加する。</p>
+
+<table><tr><th>耐久度</th><th>足ダメージ倍率</th><th>意味</th></tr><tr><td>50以上</td><td>×1.0（通常）</td><td>正常な状態</td></tr><tr><td>20〜49</td><td>×1.5</td><td>靴が傷んでクッション性低下</td></tr><tr><td>1〜19</td><td>×2.5</td><td>靴がボロボロ、大幅にダメージ増加</td></tr><tr><td>0</td><td>使用不能</td><td>修理が必要</td></tr></table>
+
+<p><strong>設計意図：</strong> 耐久度が50を切る前に修理するのが最も効率的。しかし修理にはSOLEが必要なため、「いつ修理するか」の判断が生まれる。</p>
+
+<h4>3.5 修理</h4>
+
+<p>修理は全回復で、グレードごとの固定コスト。</p>
+
+<table><tr><th>グレード</th><th>修理費用</th></tr><tr><td>Common</td><td>5 SOLE</td></tr><tr><td>Uncommon</td><td>20 SOLE</td></tr><tr><td>Rare</td><td>60 SOLE</td></tr><tr><td>Epic</td><td>150 SOLE</td></tr><tr><td>Legendary</td><td>400 SOLE</td></tr></table>
+
+<h4>3.6 裸足モード</h4>
+
+<p>靴を装備しない状態（裸足）ではSOLE獲得はゼロ。宝箱もドロップしない。初回チュートリアルでCommon靴が1足無料配布されるため、裸足スタートにはならない。裸足モードは「靴が壊れて修理費を貯める間」のセーフティネット。</p>
+
+<h4>3.7 靴の解体（特殊素材化）</h4>
+
+<p>任意の靴を解体して「特殊素材」1個に変換できる。耐久度がゼロでも解体可能。</p>
+
+<li>解体は不可逆（靴は消滅する）</li>
+<li>解体で得られる特殊素材のグレード＝元の靴のグレード</li>
+<li>特殊素材は宝箱からは一切得られない</li>
+<li>上位グレードの靴をクラフトするには、前のグレードの特殊素材が必要</li>
+
+<p><strong>設計意図：</strong> 使い古した靴や不要な靴を次のステップへの資源に変換できる。「この靴に思い入れがあるが、次へ進むために解体する」という感情的コストが、ゲームに深みを与える。</p>
+
+<hr>
+
+<h3 id="4. ムーブシステム（Phase A）">4. ムーブシステム（Phase A）</h3>
+
+<h4>4.1 セッションの基本ルール</h4>
+
+<table><tr><th>項目</th><th>仕様</th></tr><tr><td>開始方法</td><td>アプリで「スタート」タップ / Apple Watchから開始</td></tr><tr><td>計測</td><td>GPS＋加速度センサー、バックグラウンド動作</td></tr><tr><td>ムーブ中の操作</td><td>完全不要</td></tr><tr><td>宝箱ドロップ</td><td>1セッションにつき1箱</td></tr></table>
+
+<h4>4.2 セッション継続条件</h4>
+
+<li>一時停止の累計上限：30分</li>
+<li>30分以内に1km以上ムーブしなければセッション終了</li>
+<li>セッション終了時点までの距離・SOLEが確定（途中で切れても走った分は有効）</li>
+
+<h4>4.3 足ダメージシステム（エナジーの代替）</h4>
+
+<p>SOLEDAYには「エナジー」の概念はない。代わりに<strong>足ダメージ</strong>が1日の活動量を自然に制限する。</p>
+
+<p><strong>仕組み：</strong></p>
+<li>足のHP上限：100</li>
+<li>毎日全回復する（朝リセット）</li>
+<li>ムーブするたびに足にダメージが蓄積</li>
+<li>足のHP＝0になるとそれ以上のSOLE獲得はできない（ムーブ自体は可能だが報酬なし）</li>
+
+<p><strong>足ダメージの計算式：</strong></p>
+
+<pre><code>
+足ダメージ/km = 15.5 / (1 + Comfort × 0.028)^3.3 × 耐久度補正
+</code></pre>
+
+<p><strong>グレード別の1日最大走行可能距離（靴が万全の場合）：</strong></p>
+
+<table><tr><th>グレード</th><th>平均Comfort</th><th>足ダメージ/km</th><th>1日の最大距離</th></tr><tr><td>Common</td><td>6</td><td>10.06</td><td>約10km</td></tr><tr><td>Uncommon</td><td>14</td><td>5.20</td><td>約19km</td></tr><tr><td>Rare</td><td>26</td><td>2.55</td><td>約39km</td></tr><tr><td>Epic</td><td>42</td><td>1.19</td><td>約84km</td></tr><tr><td>Legendary</td><td>65</td><td>0.51</td><td>約198km</td></tr></table>
+
+<p><strong>設計意図：</strong></p>
+
+<li><strong>自然な上限：</strong> Common靴では1日最大約10km。20km走りたい人はUncommon以上が必要→アップグレードの動機。</li>
+<li><strong>ハードキャップではない：</strong> 足ダメージは翌日回復する。1日休めば全快。</li>
+<li><strong>STEPNのエナジーとの違い：</strong> STEPNはエナジーを消費しないと走れない。SOLEDAYは「走れるが、足が痛くなる」。より身体的で直感的。</li>
+<li><strong>耐久度との相互作用：</strong> 靴がボロボロだと足ダメージが増える。修理をサボると1日の走行可能距離が減る。</li>
+
+<hr>
+
+<h3 id="5. SOLE経済">5. SOLE経済</h3>
+
+<h4>5.1 基本レート</h4>
+
+<pre><code>
+1 km = 1 SOLE（基本レート、0.1 SOLE単位で計算）
+</code></pre>
+
+<h4>5.2 Efficiency による獲得量</h4>
+
+<pre><code>
+SOLE/km = floor(1.03 ^ Efficiency × 10) / 10
+</code></pre>
+
+<p>この指数関数により、Efficiencyが高いほど獲得量が指数的に増加する。</p>
+
+<table><tr><th>グレード</th><th>平均Efficiency</th><th>SOLE/km</th><th>倍率（vs Common）</th></tr><tr><td>裸足</td><td>—</td><td>0</td><td>×0</td></tr><tr><td>Common</td><td>6</td><td>1.1</td><td>×1.0</td></tr><tr><td>Uncommon</td><td>14</td><td>1.5</td><td>×1.4</td></tr><tr><td>Rare</td><td>26</td><td>2.1</td><td>×1.9</td></tr><tr><td>Epic</td><td>42</td><td>3.5</td><td>×3.2</td></tr><tr><td>Legendary</td><td>65</td><td>6.8</td><td>×6.2</td></tr></table>
+
+<h4>5.3 セッション完了ボーナス</h4>
+
+<p>1kmのムーブを完了したセッションにつき <strong>+1 SOLE</strong> のフラットボーナス。</p>
+
+<h4>5.4 日別獲得量の目安（距離 × SOLE/km + セッションボーナス）</h4>
+
+<table><tr><th>グレード</th><th>2km/日</th><th>5km/日</th><th>10km/日</th><th>20km/日</th><th>40km/日</th></tr><tr><td>Common</td><td>3.2</td><td>6.5</td><td>12.0</td><td>制限※</td><td>制限※</td></tr><tr><td>Uncommon</td><td>4.0</td><td>8.5</td><td>16.0</td><td>31.0</td><td>47.8</td></tr><tr><td>Rare</td><td>5.2</td><td>11.5</td><td>22.0</td><td>43.0</td><td>85.0</td></tr><tr><td>Epic</td><td>8.0</td><td>18.5</td><td>36.0</td><td>71.0</td><td>141.0</td></tr><tr><td>Legendary</td><td>14.6</td><td>35.0</td><td>69.0</td><td>137.0</td><td>273.0</td></tr></table>
+
+<p>※ Common靴では足ダメージにより最大約10kmに制限される</p>
+
+<h4>5.5 ストリークボーナス</h4>
+
+<table><tr><th>条件</th><th>ボーナス</th></tr><tr><td>7日連続セッション</td><td>+20 SOLE</td></tr><tr><td>30日連続セッション</td><td>+80 SOLE（月1回のみ）</td></tr></table>
+
+<h4>5.6 SOLE のシンク（消費先）一覧</h4>
+
+<table><tr><th>カテゴリ</th><th>用途</th><th>コスト範囲</th></tr><tr><td>宝箱開封</td><td>鍵の購入</td><td>1〜120 SOLE</td></tr><tr><td>クラフト</td><td>靴の制作費</td><td>20〜15,000 SOLE</td></tr><tr><td>クラフト</td><td>リロール（再生成）</td><td>クラフト費の50%</td></tr><tr><td>修理</td><td>耐久値の全回復</td><td>5〜400 SOLE</td></tr><tr><td>強化</td><td>ソールストーン取り外し</td><td>15 SOLE</td></tr><tr><td>強化</td><td>ソールストーン合成</td><td>40〜80 SOLE</td></tr><tr><td>NFT化</td><td>靴のNFTミント</td><td>50 SOLE</td></tr><tr><td>コスメティック</td><td>靴のリネーム・エフェクト変更</td><td>20〜100 SOLE</td></tr><tr><td>イベント</td><td>チャレンジ参加費</td><td>10〜50 SOLE</td></tr></table>
+
+<hr>
+
+<h3 id="6. 宝箱と鍵システム">6. 宝箱と鍵システム</h3>
+
+<h4>6.1 宝箱の基本ルール</h4>
+
+<li><strong>1セッションにつき1箱ドロップ</strong></li>
+<li>宝箱にはグレードがある（Common〜Legendary）</li>
+<li>宝箱は<strong>開封待機時間</strong>が設定されており、すぐには開けられない</li>
+<li>開封には対応する鍵（SOLEで購入）が必要</li>
+<li>宝箱の保管上限：8箱（フリー）/ 12箱（プレミアム）</li>
+
+<h4>6.2 宝箱のグレード決定</h4>
+
+<pre><code>
+スコア = 走行距離 × 0.5 + Luck × 0.3 + ランダム(0〜10)
+</code></pre>
+
+<table><tr><th>スコア範囲</th><th>宝箱グレード</th></tr><tr><td>0〜7</td><td>Common</td></tr><tr><td>8〜17</td><td>Uncommon</td></tr><tr><td>18〜29</td><td>Rare</td></tr><tr><td>30〜44</td><td>Epic</td></tr><tr><td>45以上</td><td>Legendary</td></tr></table>
+
+<p><strong>プレイヤー別の宝箱グレード分布（シミュレーション結果）：</strong></p>
+
+<table><tr><th>プレイヤー</th><th>Common</th><th>Uncommon</th><th>Rare</th><th>Epic</th><th>Legendary</th></tr><tr><td>Walker（2km, Common靴）</td><td>55%</td><td>45%</td><td>0%</td><td>0%</td><td>0%</td></tr><tr><td>Casual（5km, Common靴）</td><td>40%</td><td>60%</td><td>0%</td><td>0%</td><td>0%</td></tr><tr><td>Regular（10km, Uncommon靴）</td><td>0%</td><td>89%</td><td>11%</td><td>0%</td><td>0%</td></tr><tr><td>Hardcore（20km, Rare靴）</td><td>0%</td><td>2%</td><td>98%</td><td>0%</td><td>0%</td></tr><tr><td>Ultra（40km, Epic靴）</td><td>0%</td><td>0%</td><td>0%</td><td>100%</td><td>0%</td></tr></table>
+
+<h4>6.3 宝箱の開封待機時間</h4>
+
+<table><tr><th>宝箱グレード</th><th>待機時間</th><th>中身（素材数）</th><th>鍵の価格</th></tr><tr><td>Common</td><td>2日</td><td>2〜3個</td><td>1 SOLE</td></tr><tr><td>Uncommon</td><td>4日</td><td>3〜4個</td><td>3 SOLE</td></tr><tr><td>Rare</td><td>8日</td><td>4〜5個</td><td>12 SOLE</td></tr><tr><td>Epic</td><td>14日</td><td>5〜7個</td><td>40 SOLE</td></tr><tr><td>Legendary</td><td>20日</td><td>7〜10個</td><td>120 SOLE</td></tr></table>
+
+<p><strong>設計意図：</strong></p>
+
+<li><strong>開封待機時間が「急がない」を強制する：</strong> 即座にすべてが手に入る仕組みはインフレを加速する。待機時間があることで、ゲーム内の時間経過に意味が生まれる。</li>
+<li><strong>鍵の価格がSOLEのシンクになる：</strong> 全宝箱を開けるにはコインが必要。稼いだSOLEをすべてクラフトに回せない＝経済の減速弁。</li>
+<li><strong>保管上限が選択を迫る：</strong> 8枠しかないので、「開ける宝箱」と「見送る宝箱」の判断が必要。高グレード宝箱のために枠を空けておく戦略性。</li>
+<li><strong>宝箱から出るのは基本素材のみ：</strong> 特殊素材（靴の解体から取得）は宝箱からは一切出ない。これにより「クラフト→使用→解体」の循環が必須になる。</li>
+
+<hr>
+
+<h3 id="7. クラフトシステム">7. クラフトシステム</h3>
+
+<h4>7.1 靴の構成</h4>
+
+<p>1足の靴 ＝ 4パーツの組み合わせ。</p>
+
+<table><tr><th>パーツ</th><th>役割</th><th>AI画像への影響</th></tr><tr><td>ソール（靴底）</td><td>全体フォルム</td><td>シルエット・ソール形状</td></tr><tr><td>アッパー（甲）</td><td>素材感・色調</td><td>テクスチャ・カラー</td></tr><tr><td>レーシング（靴紐）</td><td>ディテール</td><td>締結部分のデザイン</td></tr><tr><td>アクセント（装飾）</td><td>個性</td><td>エンブレム・エフェクト</td></tr></table>
+
+<p>各素材にCommon〜Legendaryのレアリティがあり、使った素材のレアリティで靴のグレードが決まる。</p>
+
+<h4>7.2 魔靴工房</h4>
+
+<p>靴をクラフトする場所は「魔靴工房」。ファンタジー世界の工房をモチーフにしたUI。</p>
+
+<p><strong>工房主：老職人NPC「マイスター・ソール」</strong></p>
+<li>素材を持ち込むとセリフが変わる</li>
+<li>初心者期間はクラフト手順をガイド</li>
+
+<h4>7.3 クラフト費用</h4>
+
+<table><tr><th>靴グレード</th><th>SOLE</th><th>特殊素材</th><th>基本素材</th><th>合計SOLE（特殊素材の製造費込み）</th></tr><tr><td>Common</td><td>20</td><td>不要</td><td>10個</td><td>20</td></tr><tr><td>Uncommon</td><td>120</td><td>Common×1</td><td>14個</td><td>140</td></tr><tr><td>Rare</td><td>500</td><td>Uncommon×2</td><td>20個</td><td>740</td></tr><tr><td>Epic</td><td>2,500</td><td>Rare×3</td><td>28個</td><td>4,000</td></tr><tr><td>Legendary</td><td>15,000</td><td>Epic×8</td><td>50個</td><td>55,000</td></tr></table>
+
+<p><strong>「合計SOLE」の意味：</strong> 例えばRare靴をクラフトするには、まずUncommon靴を2足作って解体する必要がある。各Uncommon靴にはCommon靴1足の解体が必要。つまりRare1足のために、Common靴2足（40 SOLE）＋Uncommon靴2足（240 SOLE）＋Rare本体（500 SOLE）＝740 SOLE＋48素材が必要。この指数的コスト増がインフレ防止の構造になる。</p>
+
+<p>Legendary靴の場合、Epic靴を8足必要とするため、その製造コストも遡って計算される。この累積コストの指数性により、最高グレード到達は限定され、長期的な経済安定性が実現される。</p>
+
+<h4>7.4 リロール（再生成）</h4>
+
+<li>クラフト費用の50%を追加で支払い、1回だけ再生成可能</li>
+<li>同じ素材セットでも毎回異なる画像が出る（真の1点モノ）</li>
+<li>2回目の結果は確定</li>
+
+<h4>7.5 靴のパラメータ決定</h4>
+
+<p>靴の4ステータス（Efficiency, Luck, Resilience, Comfort）は、靴のグレードに応じた範囲でランダムに決定される（3.2参照）。素材の種類はAI画像のビジュアルに影響するが、ステータス値には影響しない。</p>
+
+<h4>7.6 NFT化</h4>
+
+<li>靴はデフォルトではアプリ内データ</li>
+<li>NFT化は任意の操作：50 SOLE＋少額ガス代</li>
+<li>NFT化した靴のみがマーケットプレイスで売買可能</li>
+<li>NFT化しなくてもゲーム内で全機能利用可能</li>
+
+<hr>
+
+<h3 id="8. ソールストーンシステム">8. ソールストーンシステム</h3>
+
+<h4>8.1 概要</h4>
+
+<p>ソールストーンは靴のソケットにはめ込む強化アイテム。宝箱から低確率でドロップする。</p>
+
+<p><strong>解放タイミング：</strong> 10セッション目。チュートリアルでCommonストーン1個配布。</p>
+
+<h4>8.2 ストーンの種類</h4>
+
+<p><strong>基本ストーン（4属性対応）：</strong></p>
+
+<table><tr><th>ストーン名</th><th>属性</th><th>効果</th><th>レアリティ</th></tr><tr><td>フレイムコア</td><td>炎</td><td>Efficiency +5%〜+15%</td><td>Common〜Rare</td></tr><tr><td>アクアコア</td><td>水</td><td>宝箱の素材数+1</td><td>Common〜Rare</td></tr><tr><td>ゲイルコア</td><td>風</td><td>Luck +10%〜+30%</td><td>Common〜Rare</td></tr><tr><td>テラコア</td><td>大地</td><td>Resilience +10%〜+30%</td><td>Common〜Rare</td></tr></table>
+
+<p><strong>上位ストーン（合成で入手）：</strong></p>
+
+<table><tr><th>ストーン名</th><th>合成元</th><th>効果</th><th>レアリティ</th></tr><tr><td>マグマコア</td><td>フレイム×2 + テラ×1</td><td>Efficiency +20%, 天気共鳴効果2倍</td><td>Epic</td></tr><tr><td>ストームコア</td><td>アクア×2 + ゲイル×1</td><td>宝箱グレード1段階UP（30%確率）</td><td>Epic</td></tr><tr><td>ガイアコア</td><td>全4属性×1ずつ</td><td>全ステータス+10%</td><td>Legendary</td></tr></table>
+
+<h4>8.3 ソケット数</h4>
+
+<table><tr><th>靴グレード</th><th>ソケット数</th></tr><tr><td>Common</td><td>1</td></tr><tr><td>Uncommon</td><td>2</td></tr><tr><td>Rare</td><td>3</td></tr><tr><td>Epic</td><td>4</td></tr><tr><td>Legendary</td><td>5</td></tr></table>
+
+<h4>8.4 操作コスト</h4>
+
+<table><tr><th>操作</th><th>コスト</th></tr><tr><td>はめ込み</td><td>無料</td></tr><tr><td>取り外し</td><td>15 SOLE</td></tr><tr><td>合成</td><td>40〜80 SOLE</td></tr></table>
+
+<hr>
+
+<h3 id="9. 属性と天気共鳴">9. 属性と天気共鳴</h3>
+
+<h4>9.1 概要</h4>
+
+<p>靴にはクラフト時に4属性のうち1つが自動付与される。天気と属性が一致すると共鳴ボーナスが発動。</p>
+
+<h4>9.2 属性の決定</h4>
+
+<p>使用した素材の傾向で自動決定（ユーザーが直接選ぶ必要はない）。</p>
+
+<table><tr><th>素材の傾向</th><th>属性</th><th>代表素材例</th></tr><tr><td>熱・光・速度系</td><td>炎</td><td>ボルカニックレザー、ファイアーエンブレム</td></tr><tr><td>水・海・柔軟系</td><td>水</td><td>オーシャンニット、アクアコア</td></tr><tr><td>空気・軽量・高所系</td><td>風</td><td>メッシュウィーブ、クラウドフォーム</td></tr><tr><td>岩・重厚・安定系</td><td>大地</td><td>トレイルグリップ、ドラゴンスケール</td></tr></table>
+
+<h4>9.3 天気共鳴ボーナス</h4>
+
+<table><tr><th>天気条件</th><th>共鳴属性</th><th>ボーナス</th></tr><tr><td>晴れ・猛暑日</td><td>炎</td><td>SOLE獲得+15%</td></tr><tr><td>雨・雪</td><td>水</td><td>宝箱グレード1段階UP</td></tr><tr><td>強風</td><td>風</td><td>Luck +20%</td></tr><tr><td>曇り・霧</td><td>大地</td><td>耐久値消費-20%</td></tr></table>
+
+<p>不一致時のペナルティ：なし。共鳴はラッキーボーナスであり、損することはない。</p>
+
+<p><strong>UX：</strong> セッション開始画面に天気アイコンと「今日のおすすめ属性」を小さく表示。共鳴する靴にはキラキラマークが付く。</p>
+
+<p><strong>設計意図：</strong> 天気予報を見て「今日は雨だから水属性の靴で走ろう」と思わせる＝靴を複数持つ動機＝クラフトの動機＝走る動機の連鎖。</p>
+
+<hr>
+
+<h3 id="10. 経済バランスシミュレーション">10. 経済バランスシミュレーション</h3>
+
+<h4>10.1 シミュレーション概要</h4>
+
+<p>10,000人のユーザーを6つのアーキタイプに分類し、365日のシミュレーションを実施した。データは笹川スポーツ財団・Strava等の実ランナー分布に基づく。</p>
+
+<p><strong>ユーザー分布：</strong></p>
+
+<table><tr><th>アーキタイプ</th><th>日次距離</th><th>頻度</th><th>人数</th><th>属性</th></tr><tr><td>Walker</td><td>2km</td><td>週5日</td><td>3,000人</td><td>散歩・軽ウォーク</td></tr><tr><td>Light</td><td>4km</td><td>週4日</td><td>2,800人</td><td>初心者ジョガー</td></tr><tr><td>Casual</td><td>6km</td><td>週4日</td><td>2,200人</td><td>週末ランナー</td></tr><tr><td>Regular</td><td>10km</td><td>週5日</td><td>1,200人</td><td>サブ4〜サブ3.5</td></tr><tr><td>Hardcore</td><td>20km</td><td>週6日</td><td>700人</td><td>サブ3級</td></tr><tr><td>Ultra</td><td>40km</td><td>週6日</td><td>100人</td><td>ウルトラランナー</td></tr></table>
+
+<h4>10.2 アーキタイプ別結果（1年シミュレーション）</h4>
+
+<table><tr><th>アーキタイプ</th><th>年間獲得</th><th>年間消費</th><th>バーンレート</th><th>Uncommon到達</th><th>Rare到達</th><th>Epic到達</th><th>Legendary到達</th></tr><tr><td>Walker</td><td>1,182</td><td>831</td><td>70%</td><td>3.5m(100%)</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Light</td><td>1,444</td><td>951</td><td>66%</td><td>2.6m(100%)</td><td>11.5m(16%)</td><td>—</td><td>—</td></tr><tr><td>Casual</td><td>2,393</td><td>1,920</td><td>80%</td><td>1.5m(100%)</td><td>8.6m(100%)</td><td>—</td><td>—</td></tr><tr><td>Regular</td><td>5,269</td><td>3,282</td><td>62%</td><td>0.9m(100%)</td><td>4.5m(100%)</td><td>—</td><td>—</td></tr><tr><td>Hardcore</td><td>15,320</td><td>10,645</td><td>69%</td><td>0.6m(100%)</td><td>2.3m(100%)</td><td>8.2m(96%)</td><td>—</td></tr><tr><td>Ultra</td><td>31,501</td><td>15,850</td><td>50%</td><td>0.6m(100%)</td><td>2.1m(100%)</td><td>5.6m(100%)</td><td>—</td></tr></table>
+
+<h4>10.3 プログレッション目安（4年シミュレーション）</h4>
+
+<table><tr><th>グレード</th><th>Walker</th><th>Light</th><th>Casual</th><th>Regular</th><th>Hardcore</th><th>Ultra</th></tr><tr><td>Uncommon</td><td>3.4m</td><td>2.5m</td><td>1.7m</td><td>0.8m</td><td>0.6m</td><td>0.7m</td></tr><tr><td>Rare</td><td>24.0m</td><td>15.1m</td><td>9.0m</td><td>4.3m</td><td>2.5m</td><td>2.2m</td></tr><tr><td>Epic</td><td>—</td><td>48.4m(7%)</td><td>38.4m(57%)</td><td>21.0m</td><td>8.7m</td><td>5.6m</td></tr><tr><td>Legendary</td><td>—</td><td>—</td><td>—</td><td>—</td><td>34.0m(60%)</td><td>22.1m(100%)</td></tr></table>
+
+<h4>10.4 集計経済</h4>
+
+<table><tr><th>指標</th><th>値</th></tr><tr><td>年間総ミント（発行）</td><td>33,048,830 SOLE</td></tr><tr><td>年間総バーン（消費）</td><td>22,352,912 SOLE</td></tr><tr><td>年間純インフレ</td><td>10,695,918 SOLE</td></tr><tr><td>バーンレート</td><td>67.6%</td></tr><tr><td>日次ミント平均</td><td>90,542 SOLE</td></tr><tr><td>日次バーン平均</td><td>61,242 SOLE</td></tr></table>
+
+<h4>10.5 コホートモデル（ユーザー流入/離脱）</h4>
+
+<p>実際のゲーム経済では、新規ユーザー流入と既存ユーザーの離脱が同時に起こる。</p>
+
+<p><strong>仮定：</strong></p>
+<li>初期ユーザー：10,000人</li>
+<li>月次新規流入：2,000人</li>
+<li>月次離脱率：10%</li>
+
+<p><strong>結果：</strong></p>
+<li>各コホートの半減期：6.6ヶ月</li>
+<li>ピークアクティブユーザー：約20,000人（月3〜4）</li>
+<li>定常状態：約19,000人（月6以降）</li>
+<li>コホート調整後バーンレート：67.2%</li>
+
+<p>このモデルにより、新規ユーザーのミント量が既存ユーザーの離脱損失を補い、経済全体の安定性が向上することが実証された。</p>
+
+<h4>10.6 長期健全性の評価</h4>
+
+<p><strong>✓ 足ダメージが自然な上限として機能：</strong> Common靴のUltra走者は約10kmで頭打ち。アップグレードなしに稼ぎ続けることはできない。</p>
+
+<p><strong>✓ 指数的コスト増がインフレを構造的に抑制：</strong> Legendary靴1足の製造コスト（約55,000 SOLE相当）は、Common靴2,750足分に相当。上位に行くほど大量のSOLEが吸収される。</p>
+
+<p><strong>✓ 宝箱の待機時間が即時換金を阻止：</strong> Legendary宝箱は20日間開封できない。「走ったらすぐ稼げる」ではなく「走ったら将来の報酬が約束される」設計。</p>
+
+<p><strong>✓ 靴解体の特殊素材要件がポンジ構造を回避：</strong> 新規ユーザーの資金流入に依存しない。各プレイヤーが自分の靴を育て・解体するループ内で経済が完結する。</p>
+
+<p><strong>✓ Common靴では足ダメージにより最大約10kmに制限：</strong> これが自然なゲーム内の上限となり、課金圧力なしにアップグレードへの動機が生まれる。</p>
+
+<hr>
+
+<h3 id="11. フリーとプレミアムの差分">11. フリーとプレミアムの差分</h3>
+
+<table><tr><th>機能</th><th>フリー（¥0）</th><th>プレミアム（¥300/月）</th></tr><tr><td>ムーブ</td><td>無制限</td><td>無制限</td></tr><tr><td>SOLE獲得</td><td>通常レート</td><td>通常レート</td></tr><tr><td>宝箱ドロップ</td><td>1箱/セッション</td><td>1箱/セッション</td></tr><tr><td>宝箱保管上限</td><td>8箱</td><td>12箱</td></tr><tr><td>装備靴枠</td><td>1足</td><td>3足（天気で使い分け）</td></tr><tr><td>ソールストーン合成</td><td>基本ストーンのみ</td><td>上位ストーンも合成可能</td></tr><tr><td>AI走行分析</td><td>なし</td><td>ペース推移、心拍ゾーン</td></tr><tr><td>リーダーボード</td><td>閲覧のみ</td><td>参加可能</td></tr></table>
+
+<p><strong>設計意図：</strong> フリーでもコアループは完全に体験できる。プレミアムは「深く楽しみたい人向け」の拡張。プレミアムでないと走る意味がないという状態は作らない。</p>
+
+<hr>
+
+<h3 id="12. 不正防止">12. 不正防止</h3>
+
+<h4>12.1 GPS偽装対策</h4>
+
+<li>GPS座標の移動パターンと加速度センサーの振動パターンの整合性チェック</li>
+<li>異常な直線移動・瞬間移動の検出</li>
+<li>Androidのモックロケーション設定の検出</li>
+
+<h4>12.2 放置対策</h4>
+
+<li>30分間1km未満でセッション自動終了</li>
+<li>同一地点での往復移動の検出（半径100m以内を10回以上で警告）</li>
+
+<h4>12.3 BOT対策</h4>
+
+<li>機械学習による歩行/走行パターン判定</li>
+<li>CAPTCHAは導入しない（走行体験を阻害するため）</li>
+<li>異常検出時は報酬保留→手動レビュー</li>
+
+<hr>
+
+<h3 id="13. 段階解放">13. 段階解放</h3>
+
+<h4>解放スケジュール</h4>
+
+<table><tr><th>セッション</th><th>解放される機能</th><th>ユーザーが覚えること</th></tr><tr><td>1（初回）</td><td>ムーブ、SOLE獲得、自動クラフト（チュートリアル）</td><td>スタートを押して走る</td></tr><tr><td>2</td><td>靴装備</td><td>靴を装備して走る</td></tr><tr><td>3</td><td>鍵ショップ、宝箱の手動開封</td><td>鍵を買って宝箱を開ける</td></tr><tr><td>5</td><td>靴の属性システム</td><td>天気マークが光ったらラッキー</td></tr><tr><td>10</td><td>ソールストーン</td><td>石を靴にはめると強くなる</td></tr><tr><td>15</td><td>靴の解体、特殊素材</td><td>古い靴を素材にして新しい靴を作れる</td></tr></table>
+
+<hr>
+
+<h3 id="14. ソーシャル機能">14. ソーシャル機能</h3>
+
+<h4>14.1 コンセプト</h4>
+
+<p>SOLEDAYのソーシャル機能は「走る仲間がいるから続く」をテーマに設計される。ランニングは個人スポーツだが、記録の共有とコミュニティの存在が継続率を大幅に高める。</p>
+
+<p><strong>設計原則：</strong></p>
+<li>競争よりも共感：ランキングではなくフィードでの「いいね」と応援を中心に据える</li>
+<li>走行データの自然な共有：ワンタップでランログをフィードやチャットに投稿可能</li>
+<li>グループによる習慣化：朝ランや週末ランのグループが緩やかな約束になる</li>
+
+<h4>14.2 ランログ共有（フィード）</h4>
+
+<p>#### フィード機能</p>
+
+<p>ユーザーはムーブ完了後、その結果をフィードに投稿できる。</p>
+
+<p><strong>共有されるランログ情報：</strong></p>
+
+<table><tr><th>項目</th><th>内容</th></tr><tr><td>走行距離</td><td>例: 5.2 km</td></tr><tr><td>獲得SOLE</td><td>例: 48.5 SOLE</td></tr><tr><td>平均ペース</td><td>例: 6'15"/km</td></tr><tr><td>使用シューズ</td><td>シューズ名・グレード・属性（ペア画像付き）</td></tr><tr><td>ルートマップ</td><td>GPSトラッキングのミニマップ（簡略表示）</td></tr><tr><td>コメント</td><td>ユーザーの自由コメント（任意）</td></tr></table>
+
+<p><strong>フィードのインタラクション：</strong></p>
+<li>「いいね」（❤️）: ワンタップで応援</li>
+<li>コメント: テキストでの返信</li>
+<li>ストリーク表示: 連続日数がランログカードに表示される</li>
+
+<p>#### プライバシー設定</p>
+
+<table><tr><th>設定</th><th>説明</th></tr><tr><td>全体公開</td><td>すべてのユーザーから閲覧可能</td></tr><tr><td>フレンドのみ</td><td>フレンド登録したユーザーのみ閲覧可</td></tr><tr><td>非公開</td><td>フィードに投稿しない（デフォルト）</td></tr></table>
+
+<p><strong>ルートマップのプライバシー：</strong> スタート/ゴール地点は半径500m以内をマスクし、自宅や職場の特定を防止する。</p>
+
+<h4>14.3 フレンドシステム</h4>
+
+<p>#### フレンド登録</p>
+
+<li>ユーザーIDまたはQRコードによるフレンド申請</li>
+<li>相互承認制（一方的なフォローは不可）</li>
+<li>フレンド上限: 200人</li>
+
+<p>#### フレンド情報の閲覧</p>
+
+<p>フレンドの以下の情報を閲覧可能：</p>
+<li>今日の走行状況（走行済み / 未走行）</li>
+<li>装備中のシューズ（ペア画像・グレード）</li>
+<li>累計ストリーク日数</li>
+<li>フィード投稿</li>
+
+<h4>14.4 グループチャット</h4>
+
+<p>#### グループの基本仕様</p>
+
+<table><tr><th>項目</th><th>仕様</th></tr><tr><td>グループ作成</td><td>誰でも可能</td></tr><tr><td>メンバー上限</td><td>50人</td></tr><tr><td>参加グループ上限</td><td>10グループ/ユーザー</td></tr><tr><td>チャット機能</td><td>テキスト、ランログ共有、スタンプ</td></tr></table>
+
+<p>#### ランログのチャット内共有</p>
+
+<p>チャット内で「📎 ログ」ボタンからランログを直接共有可能。共有されたランログはチャット内にカード形式で表示され、距離・SOLE・ペース・シューズ情報が確認できる。</p>
+
+<p>#### グループの活用例</p>
+
+<li><strong>朝ラングループ</strong>: 毎朝の走行を報告し合い、習慣化を促進</li>
+<li><strong>週末ロングラン</strong>: 週末のロングランを計画・共有</li>
+<li><strong>地域コミュニティ</strong>: 同じ地域のランナー同士で情報交換</li>
+<li><strong>靴コレクター</strong>: レアシューズの情報やクラフト成果を共有</li>
+
+<h4>14.5 段階解放とソーシャル機能</h4>
+
+<table><tr><th>セッション</th><th>解放される機能</th></tr><tr><td>3</td><td>フィード閲覧</td></tr><tr><td>5</td><td>フレンド申請、ランログ共有</td></tr><tr><td>10</td><td>グループ作成・参加</td></tr><tr><td>15</td><td>チャット内ランログ共有</td></tr></table>
+
+<h4>14.6 ソーシャル機能のSOLE経済への影響</h4>
+
+<p>ソーシャル機能自体はSOLEの獲得・消費に直接影響しない。ただし、以下の間接効果が見込まれる：</p>
+
+<li><strong>継続率の向上</strong>: フレンドやグループの存在が離脱率を低下させる（コホートモデルの monthly_churn に影響）</li>
+<li><strong>アクティブ率の向上</strong>: グループ内の走行報告が「今日も走ろう」のモチベーションになる</li>
+<li><strong>自然な口コミ</strong>: ランログの外部SNS共有機能（Phase 2）で新規ユーザー獲得に寄与</li>
+
+<hr>
+
+<h3 id="15. 今後の検討課題">15. 今後の検討課題</h3>
+
+<li><strong>✅ 解決済み：4年シミュレーション実施</strong> — 2年目以降のEpic大量流通時の経済バランスを検証</li>
+<li><strong>✅ 解決済み：コホートモデルを実装</strong> — 月次新規2,000人、月次離脱率10%での長期シミュレーション実施</li>
+<li><strong>NFTマーケットプレイスの手数料率：</strong> 2〜5%の範囲で収益インパクトを試算</li>
+<li><strong>季節イベント：</strong> 限定素材・限定ソールストーンの排出レートと経済影響</li>
+<li><strong>→ 技術仕様書に詳細を記載：</strong> ソールストーンドロップ率の厳密設定（宝箱グレード別の確率テーブル）</li>
+<li><strong>NFTチェーン選定：</strong> Polygon / Base / 独自L2 の比較検討</li>
+<li><strong>遠征モード：</strong> 週間累計距離による特別コンテンツ（Phase 2以降）</li>
+<li><strong>✅ 解決済み：ソーシャル機能を設計</strong> — ランログ共有、フレンドシステム、グループチャットを第14章に追加</li>
+<li><strong>工房レベルシステム：</strong> 工房自体のアップグレード（作れるグレードの上限解放）</li>
+<li><strong>覚醒システム：</strong> 将来実装候補として予約。靴のビジュアル再生成＋パラメータ強化</li>
+
+<hr>
+
+<h3 id="付録A：シミュレーションパラメータ一覧">付録A：シミュレーションパラメータ一覧</h3>
+
+<h4>A.1 計算式</h4>
+
+<pre><code>
+SOLE/km         = floor(1.03^Efficiency × 10) / 10
+足ダメージ/km    = 15.5 / (1 + Comfort × 0.028)^3.3 × 耐久度補正
+耐久度消費/km    = 2.0 / (1 + Resilience × 0.03)
+宝箱スコア       = 距離 × 0.5 + Luck × 0.3 + random(0, 10)
+</code></pre>
+
+<h4>A.2 定数テーブル</h4>
+
+<p><strong>靴ステータス範囲：</strong></p>
+
+<table><tr><th>グレード</th><th>Efficiency</th><th>Luck</th><th>Resilience</th><th>Comfort</th></tr><tr><td>Common</td><td>1-10</td><td>1-10</td><td>1-10</td><td>1-10</td></tr><tr><td>Uncommon</td><td>8-20</td><td>8-20</td><td>8-20</td><td>8-20</td></tr><tr><td>Rare</td><td>18-35</td><td>18-35</td><td>18-35</td><td>18-35</td></tr><tr><td>Epic</td><td>30-55</td><td>30-55</td><td>30-55</td><td>30-55</td></tr><tr><td>Legendary</td><td>50-80</td><td>50-80</td><td>50-80</td><td>50-80</td></tr></table>
+
+<p><strong>耐久・修理：</strong></p>
+
+<table><tr><th>グレード</th><th>最大耐久値</th><th>修理費</th></tr><tr><td>Common</td><td>100</td><td>5 SOLE</td></tr><tr><td>Uncommon</td><td>160</td><td>20 SOLE</td></tr><tr><td>Rare</td><td>240</td><td>60 SOLE</td></tr><tr><td>Epic</td><td>350</td><td>150 SOLE</td></tr><tr><td>Legendary</td><td>500</td><td>400 SOLE</td></tr></table>
+
+<p><strong>クラフト：</strong></p>
+
+<table><tr><th>グレード</th><th>SOLE</th><th>特殊素材</th><th>基本素材</th></tr><tr><td>Common</td><td>20</td><td>—</td><td>10個</td></tr><tr><td>Uncommon</td><td>120</td><td>Common×1</td><td>14個</td></tr><tr><td>Rare</td><td>500</td><td>Uncommon×2</td><td>20個</td></tr><tr><td>Epic</td><td>2,500</td><td>Rare×3</td><td>28個</td></tr><tr><td>Legendary</td><td>15,000</td><td>Epic×8</td><td>50個</td></tr></table>
+
+<p><strong>宝箱：</strong></p>
+
+<table><tr><th>グレード</th><th>待機時間</th><th>鍵の価格</th><th>素材数</th></tr><tr><td>Common</td><td>2日</td><td>1 SOLE</td><td>2-3</td></tr><tr><td>Uncommon</td><td>4日</td><td>3 SOLE</td><td>3-4</td></tr><tr><td>Rare</td><td>8日</td><td>12 SOLE</td><td>4-5</td></tr><tr><td>Epic</td><td>14日</td><td>40 SOLE</td><td>5-7</td></tr><tr><td>Legendary</td><td>20日</td><td>120 SOLE</td><td>7-10</td></tr></table>
+
+</div>
+</div>
+
+</body>
+</html>
